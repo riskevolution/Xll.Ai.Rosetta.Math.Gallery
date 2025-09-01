@@ -1,1 +1,235 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Black-Scholes Option Pricing Model - Paired View</title>
+    <link id="hljs-dark-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <link id="hljs-light-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0d1117; --text-color: #c9d1d9; --header-color: #58a6ff; --border-color: #30363d;
+            --tab-text-color: #8b949e; --tab-active-color: #c9d1d9; --tab-hover-bg: #161b22; --code-bg-color: #161b22;
+        }
+        body.light-theme {
+            --bg-color: #ffffff; --text-color: #24292f; --header-color: #0969da; --border-color: #d0d7de;
+            --tab-text-color: #57606a; --tab-active-color: #24292f; --tab-hover-bg: #f6f8fa; --code-bg-color: #f6f8fa;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg-color); color: var(--text-color); }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; border-bottom: 1px solid var(--border-color); }
+        h1 { font-size: 1.5em; color: var(--header-color); margin: 0; }
+        .selector-bar { display: flex; flex-wrap: wrap; padding: 5px 20px; border-bottom: 1px solid var(--border-color); background-color: var(--bg-color);}
+        .lang-button { display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; background-color: transparent; border: 1px solid transparent; border-radius: 6px; color: var(--tab-text-color); }
+        .lang-button:hover { background-color: var(--tab-hover-bg); color: var(--tab-active-color); }
+        .gallery-container { display: flex; height: calc(100vh - 125px); }
+        .pane { width: 50%; display: flex; flex-direction: column; }
+        .pane:first-child { border-right: 1px solid var(--border-color); }
+        .pane-header { display: flex; align-items: center; gap: 8px; padding: 10px 15px; border-bottom: 1px solid var(--border-color); font-weight: 600; background-color: var(--code-bg-color); }
+        .pane-content { flex-grow: 1; overflow: auto; }
+        pre { height: 100%; margin: 0; }
+        code.hljs { height: 100%; box-sizing: border-box; background-color: var(--bg-color); border: none; padding: 1em; }
+        .theme-toggle { background: none; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; padding: 5px; display: flex; align-items:center;}
+        .theme-toggle svg { width: 16px; height: 16px; fill: var(--tab-text-color); }
+        .theme-toggle .icon-sun { display: none; }
+        body.light-theme .theme-toggle .icon-sun { display: block; }
+        body.light-theme .theme-toggle .icon-moon { display: none; }
+    </style>
+</head>
+<body>
+<div class='header'>
+<h1>Black-Scholes Option Pricing Model</h1>
+<button class='theme-toggle' onclick='toggleTheme()' aria-label='Toggle theme'><svg class='icon-sun' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zm-9-8c.55 0 1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1v2c0 .55.45 1 1 1zm0 16c.55 0 1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1v2c0 .55.45 1 1 1zM5.64 5.64c.39.39 1.02.39 1.41 0s.39-1.02 0-1.41L5.64 2.81C5.25 2.42 4.62 2.42 4.23 2.81c-.39.39-.39 1.02 0 1.41L5.64 5.64zm12.72 12.72c.39.39 1.02.39 1.41 0s.39-1.02 0-1.41l-1.41-1.41c-.39-.39-1.02-.39-1.41 0s-.39 1.02 0 1.41l1.41 1.41zM4.23 19.77c.39.39 1.02.39 1.41 0s.39-1.02 0-1.41l-1.41-1.41c-.39-.39-1.02-.39-1.41 0s-.39 1.02 0 1.41l1.41 1.41zm14.14-14.14c.39-.39.39-1.02 0-1.41s-1.02-.39-1.41 0l-1.41 1.41c-.39.39-.39 1.02 0 1.41s1.02.39 1.41 0l1.41-1.41z'/></svg><svg class='icon-moon' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.62-.14 2.37-.38-.2-.3-.37-.62-.5-.96-.4-1.12-.62-2.31-.62-3.54 0-4.42 3.58-8 8-8 .91 0 1.78.16 2.59.45.22.08.45.13.68.17.02-.02.04-.04.05-.06C20.03 7.37 16.5 3 12 3z'/></svg></button>
+</div>
+<div class="selector-bar">
+<button class="lang-button" onclick="selectLanguage('MathJax')"><img src='/images/Icon_ProgLanguage__256x256_Math.png' width='48' height='48' alt='MathJax icon' /><span>MathJax</span></button><button class="lang-button" onclick="selectLanguage('CSharp')"><img src='/images/Icon_ProgLanguage__256x256_CSharp.png' width='48' height='48' alt='CSharp icon' /><span>CSharp</span></button><button class="lang-button" onclick="selectLanguage('Python')"><img src='/images/Icon_ProgLanguage__256x256_Python.png' width='48' height='48' alt='Python icon' /><span>Python</span></button><button class="lang-button" onclick="selectLanguage('Rust')"><img src='/images/Icon_ProgLanguage__256x256_Rust.png' width='48' height='48' alt='Rust icon' /><span>Rust</span></button><button class="lang-button" onclick="selectLanguage('CPlusPlus')"><img src='/images/Icon_ProgLanguage__256x256_CPlusPlus.png' width='48' height='48' alt='CPlusPlus icon' /><span>CPlusPlus</span></button><button class="lang-button" onclick="selectLanguage('Javascript')"><img src='/images/Icon_ProgLanguage__256x256_Js.png' width='48' height='48' alt='Javascript icon' /><span>Javascript</span></button><button class="lang-button" onclick="selectLanguage('C')"><img src='/images/Icon_ProgLanguage__256x256_C.png' width='48' height='48' alt='C icon' /><span>C</span></button><button class="lang-button" onclick="selectLanguage('Go')"><img src='/images/Icon_ProgLanguage__256x256_Go.png' width='48' height='48' alt='Go icon' /><span>Go</span></button><button class="lang-button" onclick="selectLanguage('Java')"><img src='/images/Icon_ProgLanguage__256x256_Java.png' width='48' height='48' alt='Java icon' /><span>Java</span></button></div>
+<div class='gallery-container'>
+<div id='left-pane' class='pane'><div class='pane-header'></div><div class='pane-content'><pre><code id='left-code'></code></pre></div></div>
+<div id='right-pane' class='pane'><div class='pane-header'></div><div class='pane-content'><pre><code id='right-code'></code></pre></div></div>
+</div>
+<div id='code-data' style='display: none;'>
+<div data-lang='MathJax' data-icon='/images/Icon_ProgLanguage__256x256_Math.png' data-hljs='language-latex'>\begin{align*}
+  S &amp;= 100 \\
+  K &amp;= 100 \\
+  T &amp;= 1 \\
+  r &amp;= 0.05 \\
+  v &amp;= 0.2 \\
+  d1 &amp;= \frac{ (\ln\left(\frac{ S }{ K }\right) + \left( r + \frac{ v \cdot v }{ 2 } \right) \cdot T) }{ v \cdot \sqrt{T} } \\
+  d2 &amp;= d1 - v \cdot \sqrt{T} \\
+  price &amp;= S \cdot N\left(d1\right) - K \cdot \left( e^{-\left( r \cdot T \right)} \cdot N\left(d2\right) \right) 
+\end{align*}
+</div><div data-lang='CSharp' data-icon='/images/Icon_ProgLanguage__256x256_CSharp.png' data-hljs='language-csharp'>using System;
+using System.Globalization;
+public static class Program {
+  public static void Main(){
+    double S = 100;
+    double K = 100;
+    double T = 1;
+    double r = 0.05;
+    double v = 0.2;
+    double d1 = ((Math.Log((S / K)) + ((r + ((v * v) / 2)) * T)) / (v * Math.Sqrt(T)));
+    double d2 = (d1 - (v * Math.Sqrt(T)));
+    double price = ((S * MathRt.Cdf(d1)) - (K * (Math.Exp((-(r * T))) * MathRt.Cdf(d2))));
+    Console.WriteLine(MathRt.PrintFixed(price));
+  }
+}
+</div><div data-lang='Python' data-icon='/images/Icon_ProgLanguage__256x256_Python.png' data-hljs='language-python'>if __name__ == &apos;__main__&apos;:
+    S = 100
+    K = 100
+    T = 1
+    r = 0.05
+    v = 0.2
+    d1 = ((math.log((S / K)) + ((r + ((v * v) / 2)) * T)) / (v * math.sqrt(T)))
+    d2 = (d1 - (v * math.sqrt(T)))
+    MathRt.print_fixed(((S * MathRt.cdf(d1)) - (K * (math.exp((-(r * T))) * MathRt.cdf(d2)))))
+</div><div data-lang='Rust' data-icon='/images/Icon_ProgLanguage__256x256_Rust.png' data-hljs='language-rust'>fn main() {
+    let mut S = 100.0;
+    let mut K = 100.0;
+    let mut T = 1.0;
+    let mut r = 0.05;
+    let mut v = 0.2;
+    let mut d1 = ((((S / K)).ln() + ((r + ((v * v) / 2.0)) * T)) / (v * (T).sqrt()));
+    let mut d2 = (d1 - (v * (T).sqrt()));
+    print_fixed(((S * cdf(d1)) - (K * (((-(r * T))).exp() * cdf(d2)))));
+}
+</div><div data-lang='CPlusPlus' data-icon='/images/Icon_ProgLanguage__256x256_CPlusPlus.png' data-hljs='language-cpp'>// expects math_runtime.hpp to define MathRt namespace
+#include &lt;iostream&gt;
+#include &lt;cmath&gt;
+#include &lt;vector&gt;
+#include &lt;iomanip&gt;
+#include &quot;math_runtime.hpp&quot;
+
+using namespace std;
+using namespace MathRt;
+
+int main() {
+    auto S = 100;
+    auto K = 100;
+    auto T = 1;
+    auto r = 0.05;
+    auto v = 0.2;
+    auto d1 = ((log((S / K)) + ((r + ((v * v) / 2)) * T)) / (v * sqrt(T)));
+    auto d2 = (d1 - (v * sqrt(T)));
+    print_fixed(((S * cdf(d1)) - (K * (exp((-(r * T))) * cdf(d2)))));
+    return 0;
+}
+</div><div data-lang='Javascript' data-icon='/images/Icon_ProgLanguage__256x256_Js.png' data-hljs='language-javascript'>let S = 100, K = 100, T = 1, r = 0.05, v = 0.2, d1 = ((Math.log((S / K)) + ((r + ((v * v) / 2)) * T)) / (v * Math.sqrt(T))), d2 = (d1 - (v * Math.sqrt(T)));
+MathRt.printFixed(((S * MathRt.cdf(d1)) - (K * (Math.exp((-(r * T))) * MathRt.cdf(d2)))));
+</div><div data-lang='C' data-icon='/images/Icon_ProgLanguage__256x256_C.png' data-hljs='language-c'>// expects math_runtime.h to define erf_impl, cdf_impl, print_fixed
+#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+#include &lt;stdlib.h&gt;
+#include &quot;math_runtime.h&quot;
+
+int main(void) {
+    double S = 100, K = 100, T = 1, r = 0.05, v = 0.2, d1 = ((log((S / K)) + ((r + ((v * v) / 2)) * T)) / (v * sqrt(T))), d2 = (d1 - (v * sqrt(T)));
+    print_fixed(((S * cdf_impl(d1)) - (K * (exp((-(r * T))) * cdf_impl(d2)))));
+    return 0;
+}
+</div><div data-lang='Go' data-icon='/images/Icon_ProgLanguage__256x256_Go.png' data-hljs='language-go'>package main
+
+// expects mathruntime package with Erf, Cdf, PrintFixed functions
+import (
+    &quot;math&quot;
+    &quot;./mathruntime&quot;
+)
+
+func main() {
+    var (
+        S = 100
+        K = 100
+        T = 1
+        r = 0.05
+        v = 0.2
+        d1 = ((math.Log((S / K)) + ((r + ((v * v) / 2)) * T)) / (v * math.Sqrt(T)))
+        d2 = (d1 - (v * math.Sqrt(T)))
+    )
+    mathruntime.PrintFixed(((S * mathruntime.Cdf(d1)) - (K * (math.Exp((-(r * T))) * mathruntime.Cdf(d2)))))
+}
+</div><div data-lang='Java' data-icon='/images/Icon_ProgLanguage__256x256_Java.png' data-hljs='language-java'>// expects MathRuntime class with static methods erf, cdf, printFixed
+import java.util.*;
+import java.lang.Math;
+
+public class GeneratedMath {
+    public static void main(String[] args) {
+        double S = 100.0;
+        double K = 100.0;
+        double T = 1.0;
+        double r = 0.05;
+        double v = 0.2;
+        double d1 = ((Math.log((S / K)) + ((r + ((v * v) / 2.0)) * T)) / (v * Math.sqrt(T)));
+        double d2 = (d1 - (v * Math.sqrt(T)));
+        MathRuntime.printFixed(((S * MathRuntime.cdf(d1)) - (K * (Math.exp((-(r * T))) * MathRuntime.cdf(d2)))));
+    }
+}
+</div></div>
+<script>
+                let leftLang = 'MathJax';
+                let rightLang = 'CSharp';
+                const codeData = {};
+
+                function updatePane(paneSide, langName) {
+                    const data = codeData[langName];
+                    if (!data) return;
+
+                    const paneHeader = document.querySelector(`#${paneSide}-pane .pane-header`);
+                    const codeElement = document.getElementById(`${paneSide}-code`);
+
+                    paneHeader.innerHTML = `<img src='${data.icon}' width='24' height='24' alt='${langName} icon' /><span>${langName}</span>`;
+                    codeElement.textContent = data.code;
+                    codeElement.className = data.hljs;
+                    hljs.highlightElement(codeElement);
+                }
+
+                function selectLanguage(langName) {
+                    if (langName === leftLang) return; // Don't do anything if the same lang is clicked
+                    rightLang = leftLang;
+                    leftLang = langName;
+                    updatePane('left', leftLang);
+                    updatePane('right', rightLang);
+                }
+                
+                // --- Theming Logic ---
+                const lightThemeSheet = document.getElementById('hljs-light-theme');
+                const darkThemeSheet = document.getElementById('hljs-dark-theme');
+                
+                function setHighlightTheme(theme) {
+                    lightThemeSheet.disabled = (theme === 'dark');
+                    darkThemeSheet.disabled = (theme === 'light');
+                }
+
+                function setTheme(theme) {
+                    document.body.classList.toggle('light-theme', theme === 'light');
+                    setHighlightTheme(theme);
+                    localStorage.setItem('theme', theme);
+                }
+
+                function toggleTheme() {
+                    const newTheme = document.body.classList.contains('light-theme') ? 'dark' : 'light';
+                    setTheme(newTheme);
+                }
+
+                // --- Initialization ---
+                document.addEventListener('DOMContentLoaded', () => {
+                  // Load all code into a JS object for easy access
+                  document.querySelectorAll('#code-data > div').forEach(div => {
+                      const lang = div.dataset.lang;
+                      codeData[lang] = {
+                          code: div.textContent,
+                          icon: div.dataset.icon,
+                          hljs: div.dataset.hljs
+                      };
+                  });
+
+                  // Set initial state
+                  updatePane('left', leftLang);
+                  updatePane('right', rightLang);
+
+                  // Set initial theme
+                  const savedTheme = localStorage.getItem('theme') || 'dark';
+                  setTheme(savedTheme);
+                });
+            </script>
+</body></html>
+
