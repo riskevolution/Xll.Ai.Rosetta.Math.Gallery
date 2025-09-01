@@ -28,9 +28,10 @@
         .pane { width: 50%; display: flex; flex-direction: column; }
         .pane:first-child { border-right: 1px solid var(--border-color); }
         .pane-header { display: flex; align-items: center; gap: 8px; padding: 10px 15px; border-bottom: 1px solid var(--border-color); font-weight: 600; background-color: var(--code-bg-color); }
-        .pane-content { flex-grow: 1; overflow: auto; }
+        .pane-content { flex-grow: 1; overflow: auto; padding: 1em; }
+        .mathjax-container { font-family: Georgia, serif; font-size: 1.1em; line-height: 2.5; }
         pre { height: 100%; margin: 0; }
-        code.hljs { height: 100%; box-sizing: border-box; background-color: var(--bg-color); border: none; padding: 1em; }
+        code.hljs { height: 100%; box-sizing: border-box; background-color: var(--bg-color); border: none; padding: 0; }
         .theme-toggle { background: none; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; padding: 5px; display: flex; align-items:center;}
         .theme-toggle svg { width: 16px; height: 16px; fill: var(--tab-text-color); }
         .theme-toggle .icon-sun { display: none; }
@@ -46,8 +47,8 @@
 <div class="selector-bar">
 <button class="lang-button" onclick="selectLanguage('MathJax')"><img src='images/Icon_ProgLanguage__256x256_Math.png' width='48' height='48' alt='MathJax icon' /><span>MathJax</span></button><button class="lang-button" onclick="selectLanguage('CSharp')"><img src='images/Icon_ProgLanguage__256x256_CSharp.png' width='48' height='48' alt='CSharp icon' /><span>CSharp</span></button><button class="lang-button" onclick="selectLanguage('Python')"><img src='images/Icon_ProgLanguage__256x256_Python.png' width='48' height='48' alt='Python icon' /><span>Python</span></button><button class="lang-button" onclick="selectLanguage('Rust')"><img src='images/Icon_ProgLanguage__256x256_Rust.png' width='48' height='48' alt='Rust icon' /><span>Rust</span></button><button class="lang-button" onclick="selectLanguage('CPlusPlus')"><img src='images/Icon_ProgLanguage__256x256_CPlusPlus.png' width='48' height='48' alt='CPlusPlus icon' /><span>CPlusPlus</span></button><button class="lang-button" onclick="selectLanguage('Javascript')"><img src='images/Icon_ProgLanguage__256x256_Js.png' width='48' height='48' alt='Javascript icon' /><span>Javascript</span></button><button class="lang-button" onclick="selectLanguage('C')"><img src='images/Icon_ProgLanguage__256x256_C.png' width='48' height='48' alt='C icon' /><span>C</span></button><button class="lang-button" onclick="selectLanguage('Go')"><img src='images/Icon_ProgLanguage__256x256_Go.png' width='48' height='48' alt='Go icon' /><span>Go</span></button><button class="lang-button" onclick="selectLanguage('Java')"><img src='images/Icon_ProgLanguage__256x256_Java.png' width='48' height='48' alt='Java icon' /><span>Java</span></button></div>
 <div class='gallery-container'>
-<div id='left-pane' class='pane'><div class='pane-header'></div><div class='pane-content'><pre><code id='left-code'></code></pre></div></div>
-<div id='right-pane' class='pane'><div class='pane-header'></div><div class='pane-content'><pre><code id='right-code'></code></pre></div></div>
+<div id='left-pane' class='pane'><div class='pane-header'></div><div class='pane-content'></div></div>
+<div id='right-pane' class='pane'><div class='pane-header'></div><div class='pane-content'></div></div>
 </div>
 <div id='code-data' style='display: none;'>
 <div data-lang='MathJax' data-icon='images/Icon_ProgLanguage__256x256_Math.png' data-hljs='language-latex'>\begin{align*}
@@ -175,23 +176,19 @@ public class GeneratedMath {
                     if (!data) return;
 
                     const paneHeader = document.querySelector(`#${paneSide}-pane .pane-header`);
-                    const codeElement = document.getElementById(`${paneSide}-code`);
+                    const paneContent = document.querySelector(`#${paneSide}-pane .pane-content`);
 
                     paneHeader.innerHTML = `<img src='${data.icon}' width='24' height='24' alt='${langName} icon' /><span>${langName}</span>`;
                     
                     if (langName === 'MathJax') {
-                        codeElement.innerHTML = data.code; // Use innerHTML for MathJax
-                    } else {
-                        codeElement.textContent = data.code; // Use textContent for code to prevent HTML injection
-                    }
-
-                    if (langName === 'MathJax') {
+                        paneContent.innerHTML = `<div class='mathjax-container'>${data.code}</div>`;
                         if (window.MathJax) {
-                           // Use the newer MathJax 3 API to typeset the element
-                           MathJax.typesetPromise([codeElement]).catch((err) => console.log('MathJax Typeset Error: ' + err.message));
+                           MathJax.typesetPromise([paneContent]).catch((err) => console.log('MathJax Typeset Error: ' + err.message));
                         }
                     } else {
-                        codeElement.className = data.hljs;
+                        paneContent.innerHTML = `<pre><code id='${paneSide}-code' class='${data.hljs}'></code></pre>`;
+                        const codeElement = document.getElementById(`${paneSide}-code`);
+                        codeElement.textContent = data.code;
                         hljs.highlightElement(codeElement);
                     }
                 }
